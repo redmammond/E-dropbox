@@ -1,0 +1,6 @@
+{
+  "name": "Feedback Dropbox",
+  "description": "A modern, responsive mailbox-style system for submitting, managing, and collaborating on issues, concerns, and suggestions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
