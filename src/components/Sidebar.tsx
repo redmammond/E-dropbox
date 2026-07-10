@@ -171,21 +171,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </div>
         </button>
-
-        {/* User Info Block */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-white/10 border border-white/10 shadow-sm">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/25 text-white font-bold text-sm">
-            AP
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-white truncate">
-              Alex Polmond
-            </p>
-            <p className="text-[10px] font-medium text-white/60 truncate">
-              apolmond@gmail.com
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
