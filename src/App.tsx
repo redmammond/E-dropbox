@@ -55,11 +55,11 @@ export default function App() {
   });
 
   const [currentUser, setCurrentUser] = useState<string | null>(() => {
-    return localStorage.getItem('dropbox_current_user');
+    return sessionStorage.getItem('dropbox_current_user');
   });
 
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    return localStorage.getItem('dropbox_is_admin') === 'true';
+    return sessionStorage.getItem('dropbox_is_admin') === 'true';
   });
 
   const [loginRole, setLoginRole] = useState<'staff' | 'admin'>('staff');
@@ -481,13 +481,13 @@ export default function App() {
                     return;
                   }
                   setIsAdmin(true);
-                  localStorage.setItem('dropbox_is_admin', 'true');
+                  sessionStorage.setItem('dropbox_is_admin', 'true');
                 } else {
                   setIsAdmin(false);
-                  localStorage.setItem('dropbox_is_admin', 'false');
+                  sessionStorage.setItem('dropbox_is_admin', 'false');
                 }
                 setCurrentUser(name);
-                localStorage.setItem('dropbox_current_user', name);
+                sessionStorage.setItem('dropbox_current_user', name);
               }
             }}
             className="space-y-4 text-left"
