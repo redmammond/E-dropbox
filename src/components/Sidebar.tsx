@@ -21,6 +21,7 @@ interface SidebarProps {
   onToggleDarkMode: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
+  isAdmin?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -31,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleDarkMode,
   isOpenMobile,
   onCloseMobile,
+  isAdmin,
 }) => {
   // Compute counts
   const totalCount = feedbacks.length;
@@ -73,6 +75,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       color: 'text-emerald-500',
       badge: solvedCount,
     },
+    ...(isAdmin ? [{
+      id: 'activity-log' as ActiveTab,
+      label: 'Activity Log',
+      icon: Clock,
+      color: 'text-purple-500',
+      badge: null,
+    }] : [])
   ];
 
   const sidebarContent = (

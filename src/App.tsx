@@ -14,7 +14,7 @@ import {
   PlusSquare,
   AlertTriangle
 } from 'lucide-react';
-import { FeedbackItem, ActiveTab, CategoryType, StatusType, ToastMessage } from './types';
+import { FeedbackItem, ActiveTab, CategoryType, StatusType, ToastMessage, GlobalHistoryItem, GlobalActionType } from './types';
 import { initialFeedbacks } from './data/initialData';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
@@ -23,6 +23,7 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { DashboardView } from './components/DashboardView';
 import { SubmissionForm } from './components/SubmissionForm';
 import { EntryCard } from './components/EntryCard';
+import { ActivityLogView } from './components/ActivityLogView';
 
 const ITEMS_PER_PAGE = 4;
 
@@ -39,6 +40,28 @@ export default function App() {
     }
     return initialFeedbacks;
   });
+
+  const [globalHistory, setGlobalHistory] = useState<GlobalHistoryItem[]>(() => {
+    const saved = localStorage.getItem('dropbox_global_history');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse local storage history', e);
+      }
+    }
+    return [];
+  });
+
+  const [currentUser, setCurrentUser] = useState<string | null>(() => {
+    return localStorage.getItem('dropbox_current_user');
+  });
+
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return localStorage.getItem('dropbox_is_admin') === 'true';
+  });
+
+  const [loginRole, setLoginRole] = useState<'staff' | 'admin'>('staff');
 
   // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -88,6 +111,32 @@ export default function App() {
     localStorage.setItem('dropbox_submissions_list', JSON.stringify(updated));
   };
 
+  const persistGlobalHistory = (history: GlobalHistoryItem[]) => {
+    setGlobalHistory(history);
+    localStorage.setItem('dropbox_global_history', JSON.stringify(history));
+  };
+
+  const logGlobalAction = (
+    feedbackId: string,
+    action: GlobalActionType,
+    description: string,
+    previousState: FeedbackItem | null,
+    newState: FeedbackItem | null
+  ) => {
+    const timestampStr = new Date().toISOString();
+    const newEntry: GlobalHistoryItem = {
+      id: `gh-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      feedbackId,
+      action,
+      description,
+      timestamp: timestampStr,
+      editorName: currentUser || undefined,
+      previousState,
+      newState
+    };
+    persistGlobalHistory([newEntry, ...globalHistory]);
+  };
+
   // Toast handlers
   const addToast = (type: ToastMessage['type'], message: string) => {
     const newToast: ToastMessage = {
@@ -130,6 +179,7 @@ export default function App() {
 
     const updated = [newItem, ...feedbacks];
     persistFeedbacks(updated);
+    logGlobalAction(newId, 'CREATE', 'Created a new submission entry.', null, newItem);
     addToast('success', 'Your submission has been securely filed in the Dropbox inbox!');
     
     // Auto redirect to inbox tab to see their entry
@@ -140,9 +190,12 @@ export default function App() {
   // Status Change handler
   const handleUpdateStatus = (id: string, newStatus: StatusType, editorName: string) => {
     const timestampStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const oldItem = feedbacks.find(f => f.id === id) || null;
+    let newItemObj: FeedbackItem | null = null;
+    
     const updated = feedbacks.map((item) => {
       if (item.id === id) {
-        return {
+        newItemObj = {
           ...item,
           status: newStatus,
           history: [
@@ -155,10 +208,14 @@ export default function App() {
             },
           ],
         };
+        return newItemObj;
       }
       return item;
     });
 
+    if (newItemObj) {
+      logGlobalAction(id, 'UPDATE', `Status updated to ${newStatus}`, oldItem, newItemObj);
+    }
     persistFeedbacks(updated);
     addToast('info', `Workflow status updated to [${newStatus}]`);
   };
@@ -166,10 +223,13 @@ export default function App() {
   // Add/Edit official solution
   const handleUpdateSolution = (id: string, solutionContent: string, editorName: string) => {
     const timestampStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const oldItem = feedbacks.find(f => f.id === id) || null;
+    let newItemObj: FeedbackItem | null = null;
+    
     const updated = feedbacks.map((item) => {
       if (item.id === id) {
         const isNew = item.solution === null;
-        return {
+        newItemObj = {
           ...item,
           solution: {
             content: solutionContent,
@@ -186,10 +246,14 @@ export default function App() {
             },
           ],
         };
+        return newItemObj;
       }
       return item;
     });
 
+    if (newItemObj) {
+      logGlobalAction(id, 'UPDATE', `Updated official solution`, oldItem, newItemObj);
+    }
     persistFeedbacks(updated);
     addToast('success', 'Official resolution solution updated successfully!');
   };
@@ -197,9 +261,12 @@ export default function App() {
   // Add a collaboration suggestion
   const handleAddSuggestion = (id: string, content: string, suggesterName: string) => {
     const timestampStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const oldItem = feedbacks.find(f => f.id === id) || null;
+    let newItemObj: FeedbackItem | null = null;
+    
     const updated = feedbacks.map((item) => {
       if (item.id === id) {
-        return {
+        newItemObj = {
           ...item,
           suggestions: [
             ...item.suggestions,
@@ -220,10 +287,14 @@ export default function App() {
             },
           ],
         };
+        return newItemObj;
       }
       return item;
     });
 
+    if (newItemObj) {
+      logGlobalAction(id, 'UPDATE', `Added suggestion: "${content.substring(0, 30)}..."`, oldItem, newItemObj);
+    }
     persistFeedbacks(updated);
     addToast('success', `Feedback comment registered from ${suggesterName}`);
   };
@@ -231,9 +302,12 @@ export default function App() {
   // Edit a custom suggestion
   const handleEditSuggestion = (id: string, suggestionId: string, content: string) => {
     const timestampStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const oldItem = feedbacks.find(f => f.id === id) || null;
+    let newItemObj: FeedbackItem | null = null;
+    
     const updated = feedbacks.map((item) => {
       if (item.id === id) {
-        return {
+        newItemObj = {
           ...item,
           suggestions: item.suggestions.map((sug) =>
             sug.id === suggestionId
@@ -250,10 +324,14 @@ export default function App() {
             },
           ],
         };
+        return newItemObj;
       }
       return item;
     });
 
+    if (newItemObj) {
+      logGlobalAction(id, 'UPDATE', `Edited a suggestion comment`, oldItem, newItemObj);
+    }
     persistFeedbacks(updated);
     addToast('info', 'Team suggestion updated successfully.');
   };
@@ -266,7 +344,11 @@ export default function App() {
 
   const handleConfirmDelete = () => {
     if (!deletingId) return;
+    const oldItem = feedbacks.find((f) => f.id === deletingId) || null;
     const updated = feedbacks.filter((f) => f.id !== deletingId);
+    if (oldItem) {
+      logGlobalAction(deletingId, 'DELETE', `Deleted entry: "${oldItem.subject}"`, oldItem, null);
+    }
     persistFeedbacks(updated);
     setIsDeleteModalOpen(false);
     setDeletingId(null);
@@ -320,6 +402,47 @@ export default function App() {
       return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
     });
 
+  const handleRestoreState = (logId: string) => {
+    const logItem = globalHistory.find(l => l.id === logId);
+    if (!logItem) return;
+
+    let updatedFeedbacks = [...feedbacks];
+
+    if (logItem.action === 'CREATE') {
+      updatedFeedbacks = updatedFeedbacks.filter(f => f.id !== logItem.feedbackId);
+      logGlobalAction(logItem.feedbackId, 'RESTORE', `Reverted creation of entry`, logItem.newState, null);
+    } else if (logItem.action === 'DELETE') {
+      if (logItem.previousState) {
+        if (!updatedFeedbacks.some(f => f.id === logItem.feedbackId)) {
+          updatedFeedbacks = [logItem.previousState, ...updatedFeedbacks];
+        } else {
+           updatedFeedbacks = updatedFeedbacks.map(f => f.id === logItem.feedbackId ? logItem.previousState! : f);
+        }
+        logGlobalAction(logItem.feedbackId, 'RESTORE', `Restored deleted entry`, null, logItem.previousState);
+      }
+    } else if (logItem.action === 'UPDATE') {
+      if (logItem.previousState) {
+        updatedFeedbacks = updatedFeedbacks.map(f => f.id === logItem.feedbackId ? logItem.previousState! : f);
+        logGlobalAction(logItem.feedbackId, 'RESTORE', `Restored to previous state`, logItem.newState, logItem.previousState);
+      }
+    } else if (logItem.action === 'RESTORE') {
+      if (logItem.previousState) {
+        if (!updatedFeedbacks.some(f => f.id === logItem.feedbackId)) {
+          updatedFeedbacks = [logItem.previousState, ...updatedFeedbacks];
+        } else {
+          updatedFeedbacks = updatedFeedbacks.map(f => f.id === logItem.feedbackId ? logItem.previousState! : f);
+        }
+        logGlobalAction(logItem.feedbackId, 'RESTORE', `Reverted a restore action`, logItem.newState, logItem.previousState);
+      } else {
+        updatedFeedbacks = updatedFeedbacks.filter(f => f.id !== logItem.feedbackId);
+        logGlobalAction(logItem.feedbackId, 'RESTORE', `Reverted a restore action`, logItem.newState, null);
+      }
+    }
+
+    persistFeedbacks(updatedFeedbacks);
+    addToast('success', 'State successfully restored!');
+  };
+
   // Pagination parameters
   const totalItems = filteredFeedbacks.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -327,6 +450,106 @@ export default function App() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-blue-500/30 font-sans">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 space-y-6 text-center animate-in fade-in zoom-in duration-500">
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <Info className="w-8 h-8 text-blue-500" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
+              Welcome to the Dropbox
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              Please enter your full name to continue. This ensures all actions and suggestions are properly logged to you.
+            </p>
+          </div>
+          
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const name = (formData.get('name') as string)?.trim();
+              if (name) {
+                if (loginRole === 'admin') {
+                  const pw = formData.get('password') as string;
+                  if (pw !== 'admin123') {
+                    alert('Invalid admin password (hint: admin123)');
+                    return;
+                  }
+                  setIsAdmin(true);
+                  localStorage.setItem('dropbox_is_admin', 'true');
+                } else {
+                  setIsAdmin(false);
+                  localStorage.setItem('dropbox_is_admin', 'false');
+                }
+                setCurrentUser(name);
+                localStorage.setItem('dropbox_current_user', name);
+              }
+            }}
+            className="space-y-4 text-left"
+          >
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4">
+              <button
+                type="button"
+                onClick={() => setLoginRole('staff')}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginRole === 'staff' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+              >
+                Staff Access
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginRole('admin')}
+                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginRole === 'admin' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+              >
+                Admin Access
+              </button>
+            </div>
+            
+            <div>
+              <label htmlFor="name" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                Your Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                placeholder="e.g., Jane Doe"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-400"
+              />
+            </div>
+
+            {loginRole === 'admin' && (
+              <div className="animate-in slide-in-from-top-2 duration-300">
+                <label htmlFor="password" className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                  Admin Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  placeholder="Enter password"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-400"
+                />
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Enter Workspace
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f0f4f8] dark:bg-slate-900 transition-colors duration-300 font-sans" id="app-root">
@@ -346,6 +569,7 @@ export default function App() {
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         isOpenMobile={isOpenMobileSidebar}
         onCloseMobile={() => setIsOpenMobileSidebar(false)}
+        isAdmin={isAdmin}
       />
 
       {/* Main Mailbox Content Box */}
@@ -358,6 +582,7 @@ export default function App() {
           onSearchChange={setSearchText}
           feedbacks={feedbacks}
           onSelectFeedback={handleSelectFeedbackFromActivity}
+          currentUser={currentUser}
         />
 
         {/* Inner Panel body */}
@@ -376,6 +601,10 @@ export default function App() {
             />
           ) : activeTab === 'new-submission' ? (
             <SubmissionForm onSubmit={handleFormSubmit} />
+          ) : activeTab === 'activity-log' && isAdmin ? (
+            <ActivityLogView historyLog={globalHistory} onRestore={handleRestoreState} />
+          ) : activeTab === 'activity-log' && !isAdmin ? (
+            <div className="flex items-center justify-center p-12 text-slate-500">Access Denied</div>
           ) : (
             // Feedbacks Inbox Listing (Inbox, Solved, Pending tabs)
             <div className="space-y-6">
@@ -460,6 +689,7 @@ export default function App() {
                     <EntryCard
                       key={item.id}
                       item={item}
+                      currentUser={currentUser}
                       onUpdateStatus={handleUpdateStatus}
                       onUpdateSolution={handleUpdateSolution}
                       onAddSuggestion={handleAddSuggestion}

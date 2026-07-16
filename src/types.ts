@@ -54,4 +54,17 @@ export interface ToastMessage {
   message: string;
 }
 
-export type ActiveTab = 'new-submission' | 'inbox' | 'solved' | 'pending' | 'dashboard';
+export type ActiveTab = 'new-submission' | 'inbox' | 'solved' | 'pending' | 'dashboard' | 'activity-log';
+
+export type GlobalActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'RESTORE';
+
+export interface GlobalHistoryItem {
+  id: string;
+  feedbackId: string;
+  action: GlobalActionType;
+  description: string;
+  timestamp: string;
+  editorName?: string;
+  previousState: FeedbackItem | null;
+  newState: FeedbackItem | null;
+}

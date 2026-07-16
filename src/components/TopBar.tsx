@@ -8,6 +8,7 @@ interface TopBarProps {
   onSearchChange: (text: string) => void;
   feedbacks: FeedbackItem[];
   onSelectFeedback: (id: string) => void;
+  currentUser?: string;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -16,6 +17,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onSearchChange,
   feedbacks,
   onSelectFeedback,
+  currentUser,
 }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -83,6 +85,18 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Action Icons */}
       <div className="flex items-center gap-4">
+        
+        {currentUser && (
+          <div className="hidden md:flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-800">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+              {currentUser.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              {currentUser}
+            </span>
+          </div>
+        )}
+
         {/* Notifications Bell */}
         <div className="relative" ref={dropdownRef}>
           <button

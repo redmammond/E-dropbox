@@ -23,6 +23,7 @@ import { FeedbackItem, CategoryType, StatusType, Solution, UserSuggestion } from
 
 interface EntryCardProps {
   item: FeedbackItem;
+  currentUser: string;
   onUpdateStatus: (id: string, status: StatusType, editorName: string) => void;
   onUpdateSolution: (id: string, solutionContent: string, editorName: string) => void;
   onAddSuggestion: (id: string, content: string, suggesterName: string) => void;
@@ -32,6 +33,7 @@ interface EntryCardProps {
 
 export const EntryCard: React.FC<EntryCardProps> = ({
   item,
+  currentUser,
   onUpdateStatus,
   onUpdateSolution,
   onAddSuggestion,
@@ -44,7 +46,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({
   
   const [isAddingSugg, setIsAddingSugg] = useState(false);
   const [suggInput, setSuggInput] = useState('');
-  const [suggesterName, setSuggesterName] = useState('Alex Polmond');
+  const [suggesterName, setSuggesterName] = useState(currentUser);
 
   const [editingSuggId, setEditingSuggId] = useState<string | null>(null);
   const [editingSuggInput, setEditingSuggInput] = useState('');
