@@ -24,6 +24,7 @@ import { DashboardView } from './components/DashboardView';
 import { SubmissionForm } from './components/SubmissionForm';
 import { EntryCard } from './components/EntryCard';
 import { ActivityLogView } from './components/ActivityLogView';
+import { Logo } from './components/Logo';
 
 const ITEMS_PER_PAGE = 4;
 
@@ -455,8 +456,8 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-blue-500/30 font-sans">
         <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 space-y-6 text-center animate-in fade-in zoom-in duration-500">
-          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-            <Info className="w-8 h-8 text-blue-500" />
+          <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <Logo className="w-10 h-10 drop-shadow-sm" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
@@ -475,8 +476,8 @@ export default function App() {
               if (name) {
                 if (loginRole === 'admin') {
                   const pw = formData.get('password') as string;
-                  if (pw !== 'admin123') {
-                    alert('Invalid admin password (hint: admin123)');
+                  if (pw !== '@mswd123') {
+                    alert('Invalid admin password (hint: @mswd123)');
                     return;
                   }
                   setIsAdmin(true);
