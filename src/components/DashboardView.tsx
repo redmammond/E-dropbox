@@ -15,17 +15,11 @@ import { FeedbackItem } from '../types';
 
 interface DashboardViewProps {
   feedbacks: FeedbackItem[];
-  onExportExcel: () => void;
-  onExportPDF: () => void;
-  onPrintReport: () => void;
   onNavigateToTab: (tab: 'inbox' | 'solved' | 'pending') => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   feedbacks,
-  onExportExcel,
-  onExportPDF,
-  onPrintReport,
   onNavigateToTab,
 }) => {
   const total = feedbacks.length;
@@ -57,36 +51,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
             Real-time analytics and mailbox overview for Submitted Issues, Concerns, and Suggestions.
           </p>
-        </div>
-        
-        {/* Export / Print Panel */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={onExportExcel}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-            title="Download CSV file compatible with Microsoft Excel"
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Export CSV</span>
-          </button>
-          
-          <button
-            onClick={onExportPDF}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-950/50 border border-sky-200 dark:border-sky-800/50 rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-            title="Download PDF Summary Report"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Export PDF</span>
-          </button>
-
-          <button
-            onClick={onPrintReport}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/50 rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-            title="Print structured report of all items"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print Report</span>
-          </button>
         </div>
       </div>
 

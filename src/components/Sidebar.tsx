@@ -11,6 +11,7 @@ import {
   X
 } from 'lucide-react';
 import { ActiveTab, FeedbackItem } from '../types';
+import { Logo } from './Logo';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -79,12 +80,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/20 text-white shadow-sm">
-            <FolderClosed className="w-5 h-5" />
+          <div className="flex items-center justify-center w-10 h-10 shadow-sm drop-shadow-md">
+            <Logo className="w-9 h-9 drop-shadow-lg" />
           </div>
           <div>
             <h1 className="text-lg font-bold font-sans tracking-tight text-white">
-              MSWD staff DROPBOX
+              MSWD & Malasakit Center staff DROPBOX
             </h1>
             <p className="text-xs font-medium text-white/70">
               Issues & Suggestions
