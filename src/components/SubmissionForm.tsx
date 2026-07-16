@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MailCheck, RefreshCw, Trash2, Calendar, ShieldCheck, User } from 'lucide-react';
+import { MailCheck, RefreshCw, Trash2, Calendar, ShieldCheck, User, Camera, Image, X } from 'lucide-react';
 import { CategoryType, FeedbackItem, FormDraft } from '../types';
 
 interface SubmissionFormProps {
@@ -14,6 +14,7 @@ const DEFAULT_DRAFT: FormDraft = {
   description: '',
   date: new Date().toISOString().split('T')[0],
   office: 'Main',
+  photo: undefined,
 };
 
 const CHARACTER_LIMIT = 1000;
@@ -23,6 +24,53 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof FormDraft, string>>>({});
   const [hasSuccess, setHasSuccess] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handlePhotoUpload = (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (PNG, JPG, WEBP, etc.)');
+      return;
+    }
+    // Limit file size to 3MB to keep localStorage stable
+    if (file.size > 3 * 1024 * 1024) {
+      alert('File size exceeds 3MB limit to ensure proper saving.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        updateField('photo', e.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handlePhotoUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handlePhotoUpload(e.target.files[0]);
+    }
+  };
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -105,6 +153,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
       subject: form.subject.trim(),
       description: form.description.trim(),
       office: form.office,
+      photo: form.photo,
     });
 
     setIsSubmitting(false);
@@ -317,6 +366,68 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ onSubmit }) => {
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Photo Attachment (Drag & Drop or Manual Select) */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <Camera className="w-3.5 h-3.5 text-blue-500" />
+              Attach Photo/Screenshot
+            </label>
+            
+            {form.photo ? (
+              <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2 group">
+                <img 
+                  src={form.photo} 
+                  alt="Uploaded preview" 
+                  className="max-h-60 w-auto mx-auto object-contain rounded-lg"
+                  referrerPolicy="no-referrer"
+                />
+                <button
+                  type="button"
+                  onClick={() => updateField('photo', undefined)}
+                  className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white transition-all shadow-md cursor-pointer"
+                  title="Remove Photo"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <p className="text-[10px] text-center text-slate-400 mt-2">
+                  Photo attached successfully! Ready for submission.
+                </p>
+              </div>
+            ) : (
+              <div
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-xl p-6 text-center transition-all flex flex-col items-center justify-center cursor-pointer ${
+                  dragActive 
+                    ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20' 
+                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-500/50 dark:hover:border-blue-500/50 bg-slate-50/50 dark:bg-slate-800/30'
+                }`}
+                onClick={() => document.getElementById('photo-upload-input')?.click()}
+              >
+                <input
+                  id="photo-upload-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-full border border-slate-150 dark:border-slate-700 shadow-sm text-slate-450 dark:text-slate-400 group-hover:scale-105 transition-transform">
+                  <Image className="w-5 h-5 text-blue-500" />
+                </div>
+                
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-3">
+                  Drag and drop your photo here, or <span className="text-blue-600 hover:underline">browse</span>
+                </p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                  Supports PNG, JPG, JPEG, WEBP or GIF (max 3MB)
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}

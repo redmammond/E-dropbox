@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div>
             <h1 className="text-lg font-bold font-sans tracking-tight text-white">
-              DropBox HQ
+              MSWD staff DROPBOX
             </h1>
             <p className="text-xs font-medium text-white/70">
               Issues & Suggestions

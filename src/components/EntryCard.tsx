@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Image
 } from 'lucide-react';
 import { FeedbackItem, CategoryType, StatusType, Solution, UserSuggestion } from '../types';
 
@@ -49,6 +50,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({
   const [editingSuggInput, setEditingSuggInput] = useState('');
 
   const [showHistory, setShowHistory] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   // Status Badge configurations
   const getStatusConfig = (status: StatusType) => {
@@ -199,7 +201,55 @@ export const EntryCard: React.FC<EntryCardProps> = ({
         <p className="text-sm text-slate-650 dark:text-slate-300 mt-2.5 whitespace-pre-line leading-relaxed">
           {item.description}
         </p>
+
+        {/* Attached Photo display */}
+        {item.photo && (
+          <div className="mt-4">
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider mb-1.5 flex items-center gap-1">
+              <Image className="w-3 h-3 text-blue-500" />
+              <span>Attached Photo / Screenshot</span>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-center relative group/photo max-w-md">
+              <img 
+                src={item.photo} 
+                alt="Attached visualization" 
+                className="max-w-full max-h-80 object-contain cursor-zoom-in transition-all duration-300 hover:opacity-90"
+                onClick={() => setIsZoomed(true)}
+                referrerPolicy="no-referrer"
+              />
+              <div 
+                className="absolute inset-0 bg-black/40 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition-all cursor-zoom-in text-white text-xs font-bold gap-1.5"
+                onClick={() => setIsZoomed(true)}
+              >
+                <Plus className="w-4 h-4" />
+                <span>Click to expand view</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Lightbox / Zoomed photo modal */}
+      {isZoomed && item.photo && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setIsZoomed(false)}
+        >
+          <button 
+            onClick={() => setIsZoomed(false)}
+            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full transition-all cursor-pointer"
+            title="Close Zoom"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img 
+            src={item.photo} 
+            alt="Zoomed attachment" 
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
 
       {/* Official Solutions Section (Double styled emerald block) */}
       <div className="rounded-xl border border-emerald-550/20 dark:border-emerald-800/30 bg-emerald-50/20 dark:bg-emerald-950/10 p-4 space-y-3">

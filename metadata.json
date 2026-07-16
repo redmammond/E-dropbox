@@ -1,5 +1,5 @@
 {
-  "name": "Feedback Dropbox",
+  "name": "MSWD staff DROPBOX",
   "description": "A modern, responsive mailbox-style system for submitting, managing, and collaborating on issues, concerns, and suggestions.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

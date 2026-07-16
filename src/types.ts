@@ -34,6 +34,7 @@ export interface FeedbackItem {
   suggestions: UserSuggestion[];
   history: HistoryItem[];
   office?: string;
+  photo?: string;
 }
 
 export interface FormDraft {
@@ -44,6 +45,7 @@ export interface FormDraft {
   description: string;
   date: string;
   office: string;
+  photo?: string;
 }
 
 export interface ToastMessage {
