@@ -84,7 +84,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <h3 className="text-2xl font-black text-slate-800 dark:text-white font-sans">
               {issues}
             </h3>
-            <p className="text-[10px] text-red-500 dark:text-red-400 mt-1">Critical bugs</p>
+            <p className="text-[10px] text-red-500 dark:text-red-400 mt-1">Critical </p>
           </div>
         </div>
 

@@ -548,6 +548,9 @@ export default function App() {
             </button>
           </form>
         </div>
+        <div className="mt-8 text-center text-sm font-semibold text-slate-700 dark:text-slate-400 max-w-lg">
+          MSWD Issues and Concerns Management & Innovation System (MICIS) V1
+        </div>
       </div>
     );
   }
@@ -760,6 +763,11 @@ export default function App() {
               )}
             </div>
           )}
+
+          {/* Footer */}
+          <div className="mt-8 pt-4 pb-2 text-center text-sm font-semibold text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800">
+            MSWD Issues and Concerns Management & Innovation System (MICIS) V1
+          </div>
         </main>
       </div>
 

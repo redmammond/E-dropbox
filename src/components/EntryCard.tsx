@@ -85,7 +85,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({
   const handleSaveSolution = (e: React.FormEvent) => {
     e.preventDefault();
     if (!solutionInput.trim()) return;
-    onUpdateSolution(item.id, solutionInput.trim(), 'Alex Polmond');
+    onUpdateSolution(item.id, solutionInput.trim(), currentUser || 'Anonymous');
     setIsAddingSolution(false);
     setIsEditingSolution(false);
   };
@@ -174,7 +174,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({
             <StatusIcon className="w-3.5 h-3.5 shrink-0" />
             <select
               value={item.status}
-              onChange={(e) => onUpdateStatus(item.id, e.target.value as StatusType, 'Alex Polmond')}
+              onChange={(e) => onUpdateStatus(item.id, e.target.value as StatusType, currentUser || 'Anonymous')}
               className="bg-transparent border-none p-0 pr-5 text-xs font-semibold focus:ring-0 cursor-pointer outline-none select-none text-slate-800 dark:text-slate-200"
               title="Click to modify workflow status"
             >
