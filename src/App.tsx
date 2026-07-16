@@ -461,7 +461,7 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
-              Welcome to the Dropbox
+              Welcome to the E-Dropbox
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">
               Please enter your full name to continue. This ensures all actions and suggestions are properly logged to you.
